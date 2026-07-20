@@ -196,15 +196,17 @@ public class GwInstekPsw : IPowerSupply
     }
 
     /// <summary>
-    /// 发送查询命令并读取回复（SCPI 经典三步）
-    /// 
+    /// <para>发送查询命令并读取回复（SCPI 经典三步）</para>
+    /// <para>
     /// 步骤：
     /// ① Send(cmd)       — 发命令
     /// ② Thread.Sleep    — 等仪器处理（仪器不是瞬间回复的）
     /// ③ 循环 Read       — 从网络流读字节直到收到换行符 \n
-    /// 
+    /// </para>
+    /// <para>
     /// 为什么循环读？TCP 是"流"协议，数据可能分几次到达。
     /// 仪器回复以 \n 结束，读到 \n 就说明这条回复完整了。
+    /// </para>
     /// </summary>
     private string Query(string cmd)
     {
@@ -238,10 +240,10 @@ public class GwInstekPsw : IPowerSupply
                 // 读到换行符 \n 就停 —— 这条回复完整了
             } while (bytesRead > 0 && !sb.ToString().Contains('\n'));
         }
-        catch (IOException)
+        catch (Exception ex)
         {
-            // 超时或连接断开 → 忽略异常，返回已经读到的部分
-            // 这不是致命错误，调用方会处理空字符串的情况
+            // 超时或连接断开 → 记录错误，返回已经读到的部分
+            _lastError = ex.Message;
         }
 
         // Trim() 去掉首尾空格和换行符

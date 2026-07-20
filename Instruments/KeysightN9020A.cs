@@ -35,6 +35,25 @@ public class KeysightN9020A : ISpectrumAnalyzer
     public void PnInitMeasurement() { Write(":INIT:CONT OFF"); Write(":INIT:IMM"); Query("*OPC?"); }
     public (double freqHz, double noiseDbc) PnReadSpot(int m) => (double.Parse(Query($":CALC:LPLot:MARK{m}:X?")), double.Parse(Query($":CALC:LPLot:MARK{m}:Y?")));
 
-    private void Write(string c) { if (!c.EndsWith('\n')) c += '\n'; _stream!.Write(Encoding.ASCII.GetBytes(c)); }
-    private string Query(string c) { Write(c); var b = new byte[4096]; int n = _stream!.Read(b, 0, b.Length); return Encoding.ASCII.GetString(b, 0, n).Trim(); }
+    private void Write(string c) { if (!c.EndsWith('\n')) c += '\n'; _stream!.Write(Encoding.ASCII.GetBytes(c)); Thread.Sleep(30); }
+    private string Query(string c)
+    {
+        Write(c);
+        var sb = new StringBuilder();
+        var buf = new byte[4096];
+        try
+        {
+            int n;
+            do
+            {
+                n = _stream!.Read(buf, 0, buf.Length);
+                if (n > 0) sb.Append(Encoding.ASCII.GetChars(buf, 0, n));
+            } while (n > 0 && !sb.ToString().Contains('\n'));
+        }
+        catch (Exception ex)
+        {
+            _lastError = ex.Message;
+        }
+        return sb.ToString().Trim();
+    }
 }

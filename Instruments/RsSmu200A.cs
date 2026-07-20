@@ -30,5 +30,24 @@ public class RsSmu200A : ISignalGenerator
     { Write($"POW {pd:F2}dBm"); Write($"FREQ:STAR {sg:F3}GHz"); Write($"FREQ:STOP {sp:F3}GHz"); Write($"SWE:STEP {sk:F0}KHz"); Write($"SWE:DWEL {dm:F0}ms"); Write("SWE:SPAC LIN"); Write("SWE:MODE AUTO"); Write("FREQ:MODE SWE"); }
 
     private void Write(string c) { if (!c.EndsWith('\n')) c += '\n'; _stream!.Write(Encoding.ASCII.GetBytes(c)); Thread.Sleep(30); }
-    private string Query(string c) { Write(c); var b = new byte[4096]; int n = _stream!.Read(b, 0, b.Length); return Encoding.ASCII.GetString(b, 0, n).Trim(); }
+    private string Query(string c)
+    {
+        Write(c);
+        var sb = new StringBuilder();
+        var buf = new byte[4096];
+        try
+        {
+            int n;
+            do
+            {
+                n = _stream!.Read(buf, 0, buf.Length);
+                if (n > 0) sb.Append(Encoding.ASCII.GetChars(buf, 0, n));
+            } while (n > 0 && !sb.ToString().Contains('\n'));
+        }
+        catch (Exception ex)
+        {
+            _lastError = ex.Message;
+        }
+        return sb.ToString().Trim();
+    }
 }
