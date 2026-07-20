@@ -1,7 +1,7 @@
 # 🔍 C# 已实现部分代码审查报告
 
 > 仅聚焦已编写完成的代码中的缺陷，不含 TODO 桩代码及未移植功能。
->
+> 
 > 审查日期：2026-07-20
 
 ---
@@ -33,6 +33,7 @@ public void Disconnect() { _stream?.Close(); _tcp?.Close(); }
 ```
 
 三个问题：
+
 - `Close()` 不释放底层 Socket，应改用 `Dispose()`
 - 未将 `_tcp` / `_stream` 置 null，导致 `IsConnected` 在断开后仍可能返回 `true`
 - `Connect()` 未先调用 `Disconnect()`，重复连接会泄漏旧连接
@@ -47,12 +48,12 @@ public void Disconnect() { _stream?.Close(); _tcp?.Close(); }
 
 Python `SpectrumAnalyzer` 以下方法在 C# 接口中缺失，但**配置文件中的其他测试项（tx_gain、tx_flatness_pn、tx_rx_influence）明确引用了这些命令**：
 
-| Python方法 | SCPI 命令 | 缺失影响 |
-|-----------|----------|---------|
-| `sa_set_offset(db)` | `:SENSe:POWer:RF:GAIN:OFFSet` | 线损补偿，增益测量必用 |
-| `sa_marker_ptp()` | `:CALC:MARK:PT_Peak` | 峰峰值平坦度 |
-| `sa_marker_noise(freq)` | `:CALC:MARK2:MODE NOISe` | 噪底标记 |
-| `screenshot(path)` | `:MMEM:DATA?` | 所有测试用截图留证 |
+| Python方法                | SCPI 命令                       | 缺失影响        |
+| ----------------------- | ----------------------------- | ----------- |
+| `sa_set_offset(db)`     | `:SENSe:POWer:RF:GAIN:OFFSet` | 线损补偿，增益测量必用 |
+| `sa_marker_ptp()`       | `:CALC:MARK:PT_Peak`          | 峰峰值平坦度      |
+| `sa_marker_noise(freq)` | `:CALC:MARK2:MODE NOISe`      | 噪底标记        |
+| `screenshot(path)`      | `:MMEM:DATA?`                 | 所有测试用截图留证   |
 
 ---
 
@@ -120,11 +121,11 @@ this.btnStop.Text = "停止";
 
 **文件**: `Tests/RxNfTest.cs` vs `tests/rx_nf.py`
 
-| 缺失项 | Python (rx_nf.py) |
-|--------|------------------|
-| 上电后验证输出状态 | `base.rx_pwr.get_output_state()` |
-| 断电后验证输出状态 | `base.rx_pwr.get_output_state()` |
-| `finally` 块调用 `SafeShutdown()` | 第133行 |
+| 缺失项                            | Python (rx_nf.py)                |
+| ------------------------------ | -------------------------------- |
+| 上电后验证输出状态                      | `base.rx_pwr.get_output_state()` |
+| 断电后验证输出状态                      | `base.rx_pwr.get_output_state()` |
+| `finally` 块调用 `SafeShutdown()` | 第133行                            |
 
 如果测试中途异常退出，RX 电源不会自动关闭，被测模块持续通电。
 
@@ -241,23 +242,23 @@ progressBar.Maximum = testIds.Length; // 最多4步
 
 ## 🟢 轻微问题 (5项)
 
-| # | 问题 | 位置 |
-|---|------|------|
-| 21 | `KeysightN9020A` 端口硬编码 5025，未从配置读取 | `KeysightN9020A.cs:18` |
-| 22 | `Udc0624F.LastError` 硬编码返回 `""` | `Udc0624F.cs:21` |
-| 23 | `Logger` 无 Debug 级别 | `Utils/Logger.cs` |
-| 24 | `Console.WriteLine` 在 WinForms 中不可见（无控制台窗口） | `Utils/Logger.cs:21` |
-| 25 | `KeysightN9020A` 和 `RsSmu200A` 的 `Disconnect()` 直接 `Close()` 不 `Dispose()` | 与 #2 关联 |
+| #   | 问题                                                                         | 位置                     |
+| --- | -------------------------------------------------------------------------- | ---------------------- |
+| 21  | `KeysightN9020A` 端口硬编码 5025，未从配置读取                                         | `KeysightN9020A.cs:18` |
+| 22  | `Udc0624F.LastError` 硬编码返回 `""`                                            | `Udc0624F.cs:21`       |
+| 23  | `Logger` 无 Debug 级别                                                        | `Utils/Logger.cs`      |
+| 24  | `Console.WriteLine` 在 WinForms 中不可见（无控制台窗口）                                | `Utils/Logger.cs:21`   |
+| 25  | `KeysightN9020A` 和 `RsSmu200A` 的 `Disconnect()` 直接 `Close()` 不 `Dispose()` | 与 #2 关联                |
 
 ---
 
 ## 📊 汇总
 
-| 严重程度 | 数量 | 核心问题 |
-|---------|------|---------|
-| 🔴 严重 | 9 | TCP 单次Read、资源泄漏、接口缺方法、God Object、线程安全、空壳对话框、测试不可达、无停止机制、缺断电保护 |
-| 🟡 中等 | 11 | 串口缓冲、缺 get_output_state、异常吞不完全、配置类型丢失、null保护、死按钮、空控件、粗进度条、日志文件名 |
-| 🟢 轻微 | 5 | 硬编码端口、空LastError、缺Debug、Console无效输出、Close vs Dispose |
+| 严重程度  | 数量  | 核心问题                                                            |
+| ----- | --- | --------------------------------------------------------------- |
+| 🔴 严重 | 9   | TCP 单次Read、资源泄漏、接口缺方法、God Object、线程安全、空壳对话框、测试不可达、无停止机制、缺断电保护   |
+| 🟡 中等 | 11  | 串口缓冲、缺 get_output_state、异常吞不完全、配置类型丢失、null保护、死按钮、空控件、粗进度条、日志文件名 |
+| 🟢 轻微 | 5   | 硬编码端口、空LastError、缺Debug、Console无效输出、Close vs Dispose            |
 
 ## 🎯 修复优先级
 
