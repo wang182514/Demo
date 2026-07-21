@@ -319,11 +319,18 @@ public partial class Form1 : Form
     }
 
     // ============================================================
-    // 窗口关闭时断开仪表
+    // 窗口关闭时断开仪表并释放资源
     // ============================================================
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
         BtnDisconnect_Click(this, EventArgs.Empty);
+
+        _rxPwr?.Dispose();
+        _txPwr?.Dispose();
+        _vsg?.Dispose();
+        _sa?.Dispose();
+        _sw?.Dispose();
+
         base.OnFormClosing(e);
     }
 }

@@ -10,6 +10,7 @@ public class Udc0624F : ISwitchMatrix
     private readonly int _baudRate;
     private SerialPort? _sp;
     private string _idn = "";
+    private bool _disposed;
 
     public Udc0624F(string comPort, int baudRate = 115200)
     {
@@ -17,7 +18,6 @@ public class Udc0624F : ISwitchMatrix
     }
 
     public string Idn => _idn;
-    public bool IsConnected => _sp?.IsOpen ?? false;
     public string LastError => "";
 
     public string Connect()
@@ -28,7 +28,7 @@ public class Udc0624F : ISwitchMatrix
         return _idn;
     }
 
-    public void Disconnect() { _sp?.Close(); }
+    public void Disconnect() { _sp?.Close(); _sp = null; _idn = ""; }
 
     public void SetUdcSwitches(int sw1, int sw2, int sw3, int sw4)
     {
@@ -44,5 +44,13 @@ public class Udc0624F : ISwitchMatrix
         try { _sp.Read(new byte[8], 0, 8); } catch { }
     }
 
-    public void Dispose() => Disconnect();
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            Disconnect();
+            _disposed = true;
+            GC.SuppressFinalize(this);
+        }
+    }
 }

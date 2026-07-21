@@ -3,7 +3,7 @@ using Demo.Instruments.Abstractions;
 
 namespace Demo.Instruments;
 
-public class KeysightN9020A : TcpScpiInstrument, ISpectrumAnalyzer
+public class KeysightN9020A : ScpiInstrument, ISpectrumAnalyzer
 {
     public KeysightN9020A(string ip) : base(ip, 5025) { }
 

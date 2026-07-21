@@ -7,7 +7,7 @@ using Demo.Instruments.Abstractions;
 
 namespace Demo.Instruments;
 
-public class GwInstekPsw : TcpScpiInstrument, IPowerSupply
+public class GwInstekPsw : ScpiInstrument, IPowerSupply
 {
     // 电源响应较慢，Write 后不加额外等待，Query 读前等待 50ms
     protected override int WriteDelayMs => 0;

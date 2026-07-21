@@ -3,7 +3,7 @@ using Demo.Instruments.Abstractions;
 
 namespace Demo.Instruments;
 
-public class RsSmu200A : TcpScpiInstrument, ISignalGenerator
+public class RsSmu200A : ScpiInstrument, ISignalGenerator
 {
     public RsSmu200A(string ip) : base(ip, 5025) { }
 
