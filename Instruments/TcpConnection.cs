@@ -40,9 +40,12 @@ public class TcpConnection : IScpiConnection
     // 构造 — 连接参数在这里，不在 Connect()
     // ============================================================
 
+
+    /// <summary>
     /// <param name="ip">仪器 IP 地址，如 "192.168.1.11"</param>
     /// <param name="port">TCP 端口号，电源默认 2268，频谱仪/信号源默认 5025</param>
     /// <param name="timeoutMs">收发超时 (ms)</param>
+    /// </summary>
     public TcpConnection(string ip, int port, int timeoutMs = 3000)
     {
         _ip = ip;
@@ -78,9 +81,8 @@ public class TcpConnection : IScpiConnection
         _stream = _tcp.GetStream();
     }
 
-    // ============================================================
+
     // Disconnect — 释放 TCP 资源
-    // ============================================================
 
     /// <summary>关闭网络流和 TCP 连接，置空引用帮助 GC 回收</summary>
     public void Disconnect()
@@ -91,9 +93,8 @@ public class TcpConnection : IScpiConnection
         _tcp = null;
     }
 
-    // ============================================================
-    // Dispose — 最终清理
-    // ============================================================
+
+    // 退出程序时调用gc,防止资源泄露
 
     public void Dispose()
     {
@@ -168,5 +169,55 @@ public class TcpConnection : IScpiConnection
         }
 
         return sb.ToString().Trim();
+    }
+
+    // ============================================================
+    // ReadRaw — 读取 IE488.2 二进制块（截图等场景）
+    // ============================================================
+
+    /// <summary>
+    /// <para>发送查询命令，读取 IE488.2 二进制块响应。</para>
+    /// <para>格式：#&lt;digit&gt;&lt;byteCount&gt;&lt;data&gt;\n</para>
+    /// </summary>
+    public byte[] ReadRaw(string cmd)
+    {
+        Write(cmd);
+
+        try
+        {
+            // 读 '#'
+            int b = _stream!.ReadByte();
+            if (b != '#') { _lastError = "ReadRaw: 缺少 # 头"; return Array.Empty<byte>(); }
+
+            // 读 1 位数字 = 后面字节计数字符串的长度
+            b = _stream.ReadByte();
+            int digits = b - '0';
+            if (digits < 1 || digits > 9) { _lastError = "ReadRaw: 无效的数字位"; return Array.Empty<byte>(); }
+
+            // 读字节计数字符串并解析
+            var countBuf = new byte[digits];
+            _stream.ReadExactly(countBuf, 0, digits);
+            int byteCount = int.Parse(Encoding.ASCII.GetString(countBuf));
+
+            // 读二进制数据
+            var data = new byte[byteCount];
+            int total = 0;
+            while (total < byteCount)
+            {
+                int n = _stream.Read(data, total, byteCount - total);
+                if (n == 0) break;
+                total += n;
+            }
+
+            // 跳结尾 \n
+            _stream.ReadByte();
+
+            return data;
+        }
+        catch (Exception ex)
+        {
+            _lastError = ex.Message;
+            return Array.Empty<byte>();
+        }
     }
 }

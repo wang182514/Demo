@@ -128,4 +128,7 @@ public abstract class ScpiInstrument : IInstrument
     /// 异常不向上抛——出错时返回已读部分，LastError 记录原因。
     /// </summary>
     protected string Query(string cmd) => _connection.Query(cmd);
+
+    /// <summary>发送查询命令，读取原始字节响应（IE488.2 二进制块，用于截图等）</summary>
+    protected byte[] ReadRaw(string cmd) => _connection.ReadRaw(cmd);
 }

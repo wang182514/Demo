@@ -47,4 +47,10 @@ public interface IScpiConnection : IDisposable
     /// 异常不向上抛——出错时返回已读部分，同时设置 <see cref="LastError"/>。
     /// </summary>
     string Query(string cmd);
+
+    /// <summary>
+    /// 发送查询命令，读取原始字节响应（用于截图等二进制数据传输）。
+    /// 实现类负责解析 IE488.2 二进制块格式 (#&lt;digit&gt;&lt;count&gt;&lt;data&gt;\n)。
+    /// </summary>
+    byte[] ReadRaw(string cmd);
 }

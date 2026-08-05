@@ -15,8 +15,8 @@ public partial class Form1 : Form
     private ConfigManager _cfg = new ConfigManager();
 
     // 仪器对象（连接前为 null）
-    private GwInstekPsw? _rxPwr;
-    private GwInstekPsw? _txPwr;
+    private PSW8027E? _rxPwr;
+    private PSW8027E? _txPwr;
     private RsSmu200A? _vsg;
     private KeysightN9020A? _sa;
     private Udc0624F? _sw;
@@ -94,7 +94,7 @@ public partial class Form1 : Form
         // 接收电源
         TryConnect(() =>
         {
-            _rxPwr = new GwInstekPsw(inst["rx_power_supply"]["ip"], inst["rx_power_supply"]["port"]);
+            _rxPwr = new PSW8027E(inst["rx_power_supply"]["ip"], inst["rx_power_supply"]["port"]);
             _rxPwr.Connect();
             lblRxPwr.Text = "接收电源: ✓ " + _rxPwr.Idn;
             pnlRxPwr.BackColor = Color.LimeGreen;
@@ -103,7 +103,7 @@ public partial class Form1 : Form
         // 发射电源
         TryConnect(() =>
         {
-            _txPwr = new GwInstekPsw(inst["tx_power_supply"]["ip"], inst["tx_power_supply"]["port"]);
+            _txPwr = new PSW8027E(inst["tx_power_supply"]["ip"], inst["tx_power_supply"]["port"]);
             _txPwr.Connect();
             lblTxPwr.Text = "发射电源: ✓ " + _txPwr.Idn;
             pnlTxPwr.BackColor = Color.LimeGreen;
@@ -332,5 +332,10 @@ public partial class Form1 : Form
         _sw?.Dispose();
 
         base.OnFormClosing(e);
+    }
+
+    private void btnDisconnect_Click_1(object sender, EventArgs e)
+    {
+       
     }
 }

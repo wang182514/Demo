@@ -7,16 +7,18 @@ using Demo.Instruments.Abstractions;
 
 namespace Demo.Instruments;
 
-public class GwInstekPsw : ScpiInstrument, IPowerSupply
+public class PSW8027E : ScpiInstrument, IPowerSupply
 {
     // 电源响应较慢，Write 后不加额外等待，Query 读前等待 50ms
     protected override int WriteDelayMs => 0;
     protected override int ReadDelayMs => 50;
 
+    /// <summary>
     /// <param name="ip">仪器 IP 地址</param>
     /// <param name="port">TCP 端口号，电源默认 2268</param>
     /// <param name="timeoutSec">超时秒数</param>
-    public GwInstekPsw(string ip, int port = 2268, double timeoutSec = 1.0)
+    /// </summary>
+    public PSW8027E(string ip, int port = 2268, double timeoutSec = 1.0)
         : base(ip, port, (int)(timeoutSec * 1000))
     {
     }

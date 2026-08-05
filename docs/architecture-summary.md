@@ -92,25 +92,25 @@ public interface IInstrument : IDisposable
 
 **最关键**的接口——把"通信方式"从"仪器功能"中彻底剥离。
 
-| 成员 | 说明 |
-|---|---|
-| `Connect()` / `Disconnect()` | 无参连接/断开。连接参数在构造时传入 |
-| `Write(string cmd)` | 发送 SCPI 命令，实现类自动追加 `\n` 终止符 |
-| `Query(string cmd)` | 发送查询 → 循环读取直到 `\n`，解决 TCP 分包 |
-| `WriteDelayMs` | Write 后等待仪器消化命令的时间 |
-| `ReadDelayMs` | Query 中开始 Read 前的额外等待时间 |
-| `LastError` | 最后一次错误的描述（不抛异常，容错设计） |
+| 成员                           | 说明                           |
+| ---------------------------- | ---------------------------- |
+| `Connect()` / `Disconnect()` | 无参连接/断开。连接参数在构造时传入           |
+| `Write(string cmd)`          | 发送 SCPI 命令，实现类自动追加 `\n` 终止符  |
+| `Query(string cmd)`          | 发送查询 → 循环读取直到 `\n`，解决 TCP 分包 |
+| `WriteDelayMs`               | Write 后等待仪器消化命令的时间           |
+| `ReadDelayMs`                | Query 中开始 Read 前的额外等待时间      |
+| `LastError`                  | 最后一次错误的描述（不抛异常，容错设计）         |
 
 > **关键设计**：`Connect()` **不接收参数**。因为 TCP 需要 IP/端口，串口需要端口/波特率——接口不该关心这些差异，参数由实现类在构造时固定。
 
 ### 3.3 各仪器功能接口
 
-| 接口 | 操作 | 对应仪器 |
-|---|---|---|
-| `IPowerSupply` | `SetOutput()`, `MeasureVoltage()`, `MeasureCurrent()`, `SetVoltage()`, `SetCurrent()` | GWINSTEK PSW 电源 |
-| `ISignalGenerator` | `SetCw()`, `RfOn/Off()`, `ConfigureSweep()`, `ModOff()` | R&S SMU200A 信号源 |
-| `ISpectrumAnalyzer` | `SetModeSa/Nf/Pn()`, `SaMarkerPeak()`, `NfSetMarker()`, `PnReadSpot()` | Keysight N9020A 频谱仪 |
-| `ISwitchMatrix` | `SetUdcSwitches(sw1~sw4)` | UDC-0624F 开关矩阵 |
+| 接口                  | 操作                                                                                    | 对应仪器                |
+| ------------------- | ------------------------------------------------------------------------------------- | ------------------- |
+| `IPowerSupply`      | `SetOutput()`, `MeasureVoltage()`, `MeasureCurrent()`, `SetVoltage()`, `SetCurrent()` | GWINSTEK PSW 电源     |
+| `ISignalGenerator`  | `SetCw()`, `RfOn/Off()`, `ConfigureSweep()`, `ModOff()`                               | R&S SMU200A 信号源     |
+| `ISpectrumAnalyzer` | `SetModeSa/Nf/Pn()`, `SaMarkerPeak()`, `NfSetMarker()`, `PnReadSpot()`                | Keysight N9020A 频谱仪 |
+| `ISwitchMatrix`     | `SetUdcSwitches(sw1~sw4)`                                                             | UDC-0624F 开关矩阵      |
 
 ---
 
@@ -135,10 +135,10 @@ I -- 超时/断连 --> K[返回已读部分 + 设置 LastError]
 
 ### 两个构造函数
 
-| 构造 | 签名 | 作用 |
-|---|---|---|
-| 构造 A（快捷） | `ScpiInstrument(string ip, int port, int timeoutMs)` | new 一个 TcpConnection，传给构造 B |
-| 构造 B（主构造） | `ScpiInstrument(IScpiConnection connection)` | 存连接、同步延迟配置，真正干活 |
+| 构造        | 签名                                                   | 作用                          |
+| --------- | ---------------------------------------------------- | --------------------------- |
+| 构造 A（快捷）  | `ScpiInstrument(string ip, int port, int timeoutMs)` | new 一个 TcpConnection，传给构造 B |
+| 构造 B（主构造） | `ScpiInstrument(IScpiConnection connection)`         | 存连接、同步延迟配置，真正干活             |
 
 ### 完整调用链
 
@@ -167,9 +167,9 @@ new GwInstekPsw("192.168.1.10", 2268, 1.0)
 
 ### 关键语法
 
-| 语法 | 意思 | 去向 |
-|---|---|---|
-| `: base(...)` | 调用**父类**的构造函数 | 往上走一层 |
+| 语法            | 意思                | 去向    |
+| ------------- | ----------------- | ----- |
+| `: base(...)` | 调用**父类**的构造函数     | 往上走一层 |
 | `: this(...)` | 调用**自己类**的另一个构造函数 | 同一个类内 |
 
 `: this(new TcpConnection(...))` 先求值括号内的表达式（new 一个连接对象），然后根据结果类型匹配另一个构造——**和普通函数重载的规则相同**。
@@ -242,13 +242,13 @@ public class GwInstekPsw : ScpiInstrument, IPowerSupply
 
 ### 改动范围
 
-| 文件 | 改动 |
-|---|---|
-| `ScpiInstrument.cs`（构造 A + B） | **不动** |
-| `TcpConnection.cs` | **不动** |
-| `SerialConnection.cs` | **新增**（实现 IScpiConnection） |
-| `GwInstekPsw.cs` | **新增 1 个重载构造** |
-| 测试代码 TestBase | **不动**（只认接口） |
+| 文件                            | 改动                         |
+| ----------------------------- | -------------------------- |
+| `ScpiInstrument.cs`（构造 A + B） | **不动**                     |
+| `TcpConnection.cs`            | **不动**                     |
+| `SerialConnection.cs`         | **新增**（实现 IScpiConnection） |
+| `GwInstekPsw.cs`              | **新增 1 个重载构造**             |
+| 测试代码 TestBase                 | **不动**（只认接口）               |
 
 ### 为什么能这样？
 
@@ -264,22 +264,22 @@ TCP 场景：构造 A 内部 → new TcpConnection(...)  →  传给构造 B
 ## 八、三句话终极总结
 
 > **① 创建仪器时**，子类传 ip/port → 父类构造 A 自动 new 一个 TcpConnection → 通过 `: this(...)` 传给构造 B 存起来。
->
+> 
 > **② 发送 SCPI 时**，子类调 `protected Write/Query` → 基类直接转发给 `_connection.Write/Query` → TcpConnection 把字符串打成 ASCII 字节通过 TCP socket 发出去。
->
+> 
 > **③ 整个设计的灵魂**：仪器层只写 SCPI 命令，通信层只读写字节流，中间的 `ScpiInstrument` 基类持有一个 `IScpiConnection` 接口——**"有什么"而不是"是什么"**，所以换通信方式只需新增一个接口实现类，现有代码零改动。
 
 ---
 
 ## 九、项目中涉及的 C# 语法（学习笔记）
 
-| 语法 | 说明 |
-|---|---|
-| `class A : B` | 类 A 继承类 B |
-| `: base(...)` | 子类构造中显式调用父类构造 |
-| `: this(...)` | 同一个类中一个构造调用另一个构造 |
-| `protected` | 子类可见，外部不可见 |
-| `virtual` / `override` | 虚方法 / 子类重写 |
-| `interface` | 纯抽象契约，只有声明没有实现 |
-| `is` / `as` | 类型判断和转换 |
-| `IDisposable` | 提供 `Dispose()` 统一释放资源 |
+| 语法                     | 说明                    |
+| ---------------------- | --------------------- |
+| `class A : B`          | 类 A 继承类 B             |
+| `: base(...)`          | 子类构造中显式调用父类构造         |
+| `: this(...)`          | 同一个类中一个构造调用另一个构造      |
+| `protected`            | 子类可见，外部不可见            |
+| `virtual` / `override` | 虚方法 / 子类重写            |
+| `interface`            | 纯抽象契约，只有声明没有实现        |
+| `is` / `as`            | 类型判断和转换               |
+| `IDisposable`          | 提供 `Dispose()` 统一释放资源 |
