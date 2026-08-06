@@ -21,8 +21,7 @@
 
 | 命令                 | 方向 | 说明                              |
 | -------------------- |:----:| --------------------------------- |
-| `FREQ <value>MHz`    |  W   | 设置输出频率（单位可换 GHz/KHz）   |
-| `FREQ <value>GHz`    |  W   | 同上，GHz 单位                    |
+| `FREQ <value>MHz`    |  W   | 设置输出频率（支持 MHz / GHz / KHz）   |
 | `POW <value>dBm`     |  W   | 设置输出功率                       |
 | `:FREQ:MODE CW`      |  W   | 切换到 CW（连续波）模式            |
 | `OUTP ON`            |  W   | 开启 RF 输出                     |
