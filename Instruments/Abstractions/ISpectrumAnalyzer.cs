@@ -38,7 +38,7 @@ public interface ISpectrumAnalyzer : IInstrument
     /// <paramref name="traceType"/>: WRIT(清屏重写,默认) / MAXHold(最大值保持) / AVERage(平均)
     /// </summary>
     void SaConfigureMhz(double start, double stop, double rbw, double vbw, double refLevel, string traceType = "WRIT");
-
+    
     /// <summary>设置参考电平偏移 (dB)，用于射频线缆损耗补偿</summary>
     void SaSetOffset(double offsetDb);
 
